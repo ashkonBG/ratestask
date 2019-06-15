@@ -1,4 +1,6 @@
 import json
+import os
+
 import requests
 
 
@@ -6,8 +8,8 @@ def currency_converter(amount, from_currency):
     if from_currency == 'USD':
         return amount
 
-    url = f"https://openexchangerates.org/api/latest.json/" \
-        f"?app_id=79bad99488a847e7b8b77f246714ed5a"
+    app_id = os.environ["OPEN_EXCHANGE_APP_ID"]
+    url = f"https://openexchangerates.org/api/latest.json/?app_id={app_id}"
     result = requests.get(url)
 
     if result.status_code == 200:
