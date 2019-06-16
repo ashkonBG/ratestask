@@ -20,13 +20,18 @@ def not_found(error):
     return make_response(jsonify({'code': 404, 'message': 'The requested route is not found.'}), 404)
 
 
+@app.errorhandler(405)
+def method_not_allowed(error):
+    return make_response(jsonify({'code': 405, 'message': 'The method is not allowed for this requested.'}), 405)
+
+
 @app.errorhandler(500)
-def not_found(error):
+def internal_error(error):
     return make_response(jsonify({'code': 500, 'message': 'Internal server Error.'}), 500)
 
 
 # Routes
-@app.route('/rates/', methods=['GET', 'POST'])
+@app.route('/rates', methods=['GET', 'POST'])
 def rates_func():
     date_from = request.args.get('date_from')
     date_to = request.args.get('date_to')
@@ -48,29 +53,30 @@ def rates_func():
         if errors:
             return jsonify({'code': 422, 'message': errors}), 422
 
-            db = DB(psycopg2.extras.RealDictCursor)
-            rows = db.get_rows(
-                """
-                SELECT to_char(day, 'YYYY-MM-DD')         AS day,
-                       ROUND(AVG(price)) :: bigint AS average_price
-                FROM prices
-                WHERE day BETWEEN %(date_from)s AND %(date_to)s
-                  AND (orig_code = %(origin)s
-                    OR orig_code IN (SELECT code FROM ports WHERE parent_slug = %(origin)s)
-                    OR orig_code IN (SELECT code FROM ports WHERE parent_slug IN (SELECT slug FROM regions WHERE parent_slug = %(origin)s)))
-                  AND (dest_code = %(destination)s
-                    OR dest_code IN (SELECT code FROM ports WHERE parent_slug = %(destination)s)
-                    OR dest_code IN (SELECT code FROM ports WHERE parent_slug IN (SELECT slug FROM regions WHERE parent_slug = %(destination)s)))
-                GROUP BY day
-                ORDER BY day ASC
-                """,
-                {
-                    "date_from": date_from,
-                    "date_to": date_to,
-                    "origin": origin,
-                    "destination": destination,
-                })
-            return jsonify({'success': True, 'data': rows}), 200
+        db = DB(psycopg2.extras.RealDictCursor)
+        rows = db.get_rows(
+            """
+            SELECT to_char(day, 'YYYY-MM-DD')         AS day,
+                   ROUND(AVG(price)) :: bigint AS average_price
+            FROM prices
+            WHERE day BETWEEN %(date_from)s AND %(date_to)s
+              AND (orig_code = %(origin)s
+                OR orig_code IN (SELECT code FROM ports WHERE parent_slug = %(origin)s)
+                OR orig_code IN (SELECT code FROM ports WHERE parent_slug IN (SELECT slug FROM regions WHERE parent_slug = %(origin)s)))
+              AND (dest_code = %(destination)s
+                OR dest_code IN (SELECT code FROM ports WHERE parent_slug = %(destination)s)
+                OR dest_code IN (SELECT code FROM ports WHERE parent_slug IN (SELECT slug FROM regions WHERE parent_slug = %(destination)s)))
+            GROUP BY day
+            ORDER BY day ASC
+            """,
+            {
+                "date_from": date_from,
+                "date_to": date_to,
+                "origin": origin,
+                "destination": destination,
+            })
+
+        return jsonify({'success': True, 'data': rows}), 200
 
     if request.method == "POST":
         validator = Validator()
@@ -121,7 +127,7 @@ def rates_func():
         return jsonify({'success': True, 'message': '{} record(s) inserted.'.format(count)}), 200
 
 
-@app.route('/rates_null/', methods=['GET'])
+@app.route('/rates_null', methods=['GET'])
 def rates_null_func():
     date_from = request.args.get('date_from')
     date_to = request.args.get('date_to')
