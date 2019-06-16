@@ -51,7 +51,7 @@ Usage
 #### GET
 - Implemented an API endpoint that returns a list with the average prices for each day on a route between Port Codes origin and destination. 
 ```
-http://127.0.0.1:5000/rates/
+http://127.0.0.1:5000/rates
     ? date_from     = required|should be a valid date (YYYY-MM-DD)|should be equal or less than date_to
     & date_to       = required|should be a valid date (YYYY-MM-DD)|should be equal or greater than date_from
     & origin        = required
@@ -59,7 +59,7 @@ http://127.0.0.1:5000/rates/
 ```
 - Implemented an API endpoint that return an empty value (JSON null) for days on which there are less than 3 prices in total.
 ```
-http://127.0.0.1:5000/rates_null/
+http://127.0.0.1:5000/rates_null
     ? date_from     = required|should be a valid date (YYYY-MM-DD)|should be equal or less than date_to
     & date_to       = required|should be a valid date (YYYY-MM-DD)|should be equal or greater than date_from
     & origin        = required
@@ -69,7 +69,7 @@ http://127.0.0.1:5000/rates_null/
 #### POST
 - Implemented an API endpoint where you can upload a price with optional currency code.
 ```
-http://127.0.0.1:5000/rates/
+http://127.0.0.1:5000/rates
     ? date_from     = required|should be a valid date (YYYY-MM-DD)|should be equal or less than date_to
     & date_to       = required|should be a valid date (YYYY-MM-DD)|should be equal or greater than date_from
     & origin        = required|should exists in the _ports_, column _code_
